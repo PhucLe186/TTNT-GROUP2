@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giải bài toán 8-puzzle bằng BFS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .puzzle-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+
+        .puzzle-container {
+            text-align: center;
+        }
+
+        .puzzle-title {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .puzzle-grid {
+            display: inline-grid;
+            grid-template-columns: repeat(3, 80px);
+            grid-template-rows: repeat(3, 80px);
+            gap: 5px;
+            background: #333;
+            padding: 10px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .puzzle-cell {
+            background: linear-gradient(145deg, #f0f0f0, #d9d9d9);
+            border: none;
+            border-radius: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .puzzle-cell:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .puzzle-cell.empty {
+            background: #333;
+            cursor: default;
+        }
+
+        .puzzle-cell.empty:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .controls {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            background: linear-gradient(145deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.secondary {
+            background: linear-gradient(145deg, #95a5a6, #7f8c8d);
+            box-shadow: 0 4px 15px rgba(149, 165, 166, 0.4);
+        }
+
+        .btn.secondary:hover {
+            box-shadow: 0 6px 20px rgba(149, 165, 166, 0.6);
+        }
+
+        .solution-section {
+            background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .solution-title {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .steps-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .step {
+            display: inline-grid;
+            grid-template-columns: repeat(3, 40px);
+            grid-template-rows: repeat(3, 40px);
+            gap: 2px;
+            background: #333;
+            padding: 5px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .step-cell {
+            background: linear-gradient(145deg, #f0f0f0, #d9d9d9);
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .step-cell.empty {
+            background: #333;
+        }
+
+        .arrow {
+            font-size: 2rem;
+            color: #667eea;
+            margin: 0 10px;
+        }
+
+        .info-panel {
+            background: linear-gradient(145deg, #e3f2fd, #bbdefb);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .info-item {
+            display: inline-block;
+            margin: 0 20px;
+            padding: 10px;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #1976d2;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .status {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .status.solving {
+            color: #ff9800;
+        }
+
+        .status.solved {
+            color: #4caf50;
+        }
+
+        .status.error {
+            color: #f44336;
+        }
+
+        @media (max-width: 768px) {
+            .puzzle-section {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .puzzle-grid {
+                grid-template-columns: repeat(3, 60px);
+                grid-template-rows: repeat(3, 60px);
+            }
+            
+            .puzzle-cell {
+                font-size: 18px;
+            }
+            
+            .steps-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧩 Giải bài toán 8-puzzle</h1>
+            <p>Sử dụng thuật toán BFS (Breadth-First Search)</p>
+        </div>
+
+        <div class="puzzle-section">
+            <div class="puzzle-container">
+                <div class="puzzle-title">Trạng thái ban đầu</div>
+                <div class="puzzle-grid" id="initialGrid">
+                    <!-- Initial state cells will be generated here -->
+                </div>
+            </div>
+            
+            <div class="puzzle-container">
+                <div class="puzzle-title">Trạng thái đích</div>
+                <div class="puzzle-grid" id="goalGrid">
+                    <!-- Goal state cells will be generated here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn" onclick="shufflePuzzle()">🎲 Tạo trạng thái ngẫu nhiên</button>
+            <button class="btn" onclick="solvePuzzle()">🔍 Giải bằng BFS</button>
+            <button class="btn secondary" onclick="resetPuzzle()">🔄 Đặt lại</button>
+        </div>
+
+        <div class="status" id="status">Sẵn sàng để giải puzzle!</div>
+
+        <div class="info-panel">
+            <div class="info-item">
+                <span class="info-label">Số bước đi</span>
+                <span class="info-value" id="stepsCount">0</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Thời gian</span>
+                <span class="info-value" id="timeElapsed">0ms</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Trạng thái đã duyệt</span>
+                <span class="info-value" id="exploredStates">0</span>
+            </div>
+        </div>
+
+        <div class="solution-section" id="solutionSection" style="display: none;">
+            <div class="solution-title">🎯 Đường đi tối ưu</div>
+            <div class="steps-container" id="stepsContainer">
+                <!-- Solution steps will be displayed here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initial state and goal state
+        let initialState = [2, 8, 3, 1, 6, 4, 7, 0, 5];
+        const goalState = [1, 2, 3, 4, 5, 6,7,8,0 ];
+        
+        // Initialize the puzzle grids
+        function initializeGrids() {
+            renderGrid('initialGrid', initialState, true);
+            renderGrid('goalGrid', goalState, false);
+        }
+
+        // Render a puzzle grid
+        function renderGrid(gridId, state, interactive = false) {
+            const grid = document.getElementById(gridId);
+            grid.innerHTML = '';
+            
+            state.forEach((value, index) => {
+                const cell = document.createElement('div');
+                cell.className = value === 0 ? 'puzzle-cell empty' : 'puzzle-cell';
+                cell.textContent = value === 0 ? '' : value;
+                
+                if (interactive && value !== 0) {
+                    cell.onclick = () => moveCell(index);
+                }
+                
+                grid.appendChild(cell);
+            });
+        }
+
+        // Move a cell in the initial state
+        function moveCell(index) {
+            const emptyIndex = initialState.indexOf(0);
+            const row1 = Math.floor(index / 3);
+            const col1 = index % 3;
+            const row2 = Math.floor(emptyIndex / 3);
+            const col2 = emptyIndex % 3;
+            
+            // Check if the move is valid (adjacent cells)
+            if (Math.abs(row1 - row2) + Math.abs(col1 - col2) === 1) {
+                [initialState[index], initialState[emptyIndex]] = [initialState[emptyIndex], initialState[index]];
+                renderGrid('initialGrid', initialState, true);
+            }
+        }
+
+        // Shuffle the puzzle
+        function shufflePuzzle() {
+            let shuffled = [...goalState];
+            
+            // Perform 100 random valid moves to ensure solvability
+            for (let i = 0; i < 100; i++) {
+                const emptyIndex = shuffled.indexOf(0);
+                const possibleMoves = [];
+                
+                const row = Math.floor(emptyIndex / 3);
+                const col = emptyIndex % 3;
+                
+                // Check all four directions
+                if (row > 0) possibleMoves.push(emptyIndex - 3); // Up
+                if (row < 2) possibleMoves.push(emptyIndex + 3); // Down
+                if (col > 0) possibleMoves.push(emptyIndex - 1); // Left
+                if (col < 2) possibleMoves.push(emptyIndex + 1); // Right
+                
+                const randomMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+                [shuffled[emptyIndex], shuffled[randomMove]] = [shuffled[randomMove], shuffled[emptyIndex]];
+            }
+            
+            initialState = shuffled;
+            renderGrid('initialGrid', initialState, true);
+            document.getElementById('status').textContent = 'Trạng thái mới đã được tạo!';
+            document.getElementById('status').className = 'status';
+            document.getElementById('solutionSection').style.display = 'none';
+            resetStats();
+        }
+
+        // Reset puzzle to a default state
+        function resetPuzzle() {
+            initialState = [2, 8, 3, 1, 6, 4, 7, 0, 5];
+            renderGrid('initialGrid', initialState, true);
+            document.getElementById('status').textContent = 'Sẵn sàng để giải puzzle!';
+            document.getElementById('status').className = 'status';
+            document.getElementById('solutionSection').style.display = 'none';
+            resetStats();
+        }
+
+        // Reset statistics
+        function resetStats() {
+            document.getElementById('stepsCount').textContent = '0';
+            document.getElementById('timeElapsed').textContent = '0ms';
+            document.getElementById('exploredStates').textContent = '0';
+        }
+
+        // BFS Algorithm implementation
+        function solvePuzzle() {
+            const startTime = performance.now();
+            document.getElementById('status').textContent = 'Đang giải puzzle bằng BFS...';
+            document.getElementById('status').className = 'status solving';
+            
+            setTimeout(() => {
+                const result = bfs(initialState, goalState);
+                const endTime = performance.now();
+                
+                if (result.path) {
+                    document.getElementById('status').textContent = `Đã tìm thấy lời giải trong ${result.path.length - 1} bước!`;
+                    document.getElementById('status').className = 'status solved';
+                    document.getElementById('stepsCount').textContent = result.path.length - 1;
+                    document.getElementById('timeElapsed').textContent = Math.round(endTime - startTime) + 'ms';
+                    document.getElementById('exploredStates').textContent = result.explored;
+                    displaySolution(result.path);
+                } else {
+                    document.getElementById('status').textContent = 'Không tìm thấy lời giải!';
+                    document.getElementById('status').className = 'status error';
+                    document.getElementById('timeElapsed').textContent = Math.round(endTime - startTime) + 'ms';
+                    document.getElementById('exploredStates').textContent = result.explored;
+                }
+            }, 100);
+        }
+
+        // BFS implementation
+        function bfs(start, goal) {
+            const queue = [{state: start, path: [start]}];
+            const visited = new Set();
+            const goalStr = goal.join(',');
+            let explored = 0;
+            
+            visited.add(start.join(','));
+            
+            while (queue.length > 0) {
+                const current = queue.shift();
+                explored++;
+                
+                if (current.state.join(',') === goalStr) {
+                    return {path: current.path, explored: explored};
+                }
+                
+                const neighbors = getNeighbors(current.state);
+                
+                for (const neighbor of neighbors) {
+                    const neighborStr = neighbor.join(',');
+                    
+                    if (!visited.has(neighborStr)) {
+                        visited.add(neighborStr);
+                        queue.push({
+                            state: neighbor,
+                            path: [...current.path, neighbor]
+                        });
+                    }
+                }
+            }
+            
+            return {path: null, explored: explored};
+        }
+
+        // Get all possible neighbor states
+        function getNeighbors(state) {
+            const neighbors = [];
+            const emptyIndex = state.indexOf(0);
+            const row = Math.floor(emptyIndex / 3);
+            const col = emptyIndex % 3;
+            
+            // Define possible moves
+            const moves = [
+                {dr: -1, dc: 0}, // Up
+                {dr: 1, dc: 0},  // Down
+                {dr: 0, dc: -1}, // Left
+                {dr: 0, dc: 1}   // Right
+            ];
+            
+            for (const move of moves) {
+                const newRow = row + move.dr;
+                const newCol = col + move.dc;
+                
+                if (newRow >= 0 && newRow < 3 && newCol >= 0 && newCol < 3) {
+                    const newIndex = newRow * 3 + newCol;
+                    const newState = [...state];
+                    [newState[emptyIndex], newState[newIndex]] = [newState[newIndex], newState[emptyIndex]];
+                    neighbors.push(newState);
+                }
+            }
+            
+            return neighbors;
+        }
+
+        // Display the solution path
+        function displaySolution(path) {
+            const container = document.getElementById('stepsContainer');
+            container.innerHTML = '';
+            
+            path.forEach((state, index) => {
+                if (index > 0) {
+                    const arrow = document.createElement('div');
+                    arrow.className = 'arrow';
+                    arrow.textContent = '→';
+                    container.appendChild(arrow);
+                }
+                
+                const step = document.createElement('div');
+                step.className = 'step';
+                
+                state.forEach(value => {
+                    const cell = document.createElement('div');
+                    cell.className = value === 0 ? 'step-cell empty' : 'step-cell';
+                    cell.textContent = value === 0 ? '' : value;
+                    step.appendChild(cell);
+                });
+                
+                container.appendChild(step);
+            });
+            
+            document.getElementById('solutionSection').style.display = 'block';
+        }
+
+        // Initialize the application
+        initializeGrids();
+    </script>
+</body>
+</html>
