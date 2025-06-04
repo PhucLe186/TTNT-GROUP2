@@ -11,17 +11,11 @@ Lê Hoàng Phúc\
 Vũ Thị Thuỳ Linh\
 Nguyễn Quốc Huy\
 Hà Văn Sáng \
-
-
-
-
-
-
 ## 
 
 Công Nghệ sử dụng:\
-Python\
-FlaskAPI \ 
-JavaScript \
+Python\ 
+FlaskAPI \  
+JavaScript \ 
 Html \
 Css \
