@@ -10,7 +10,7 @@ Thành Viên Nhóm
 Lê Hoàng Phúc\
 Vũ Thị Thuỳ Linh\
 Nguyễn Quốc Huy\
-Hà Văn Sáng \
+Hà Văn Sáng 
 ## 
 
 Công Nghệ sử dụng:\
@@ -18,5 +18,5 @@ Python\
 FlaskAPI\
 JavaScript\
 Html\
-Css\
+Css
 ####
