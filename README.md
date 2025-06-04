@@ -15,7 +15,7 @@ Hà Văn Sáng \
 
 Công Nghệ sử dụng:\
 Python\ 
-FlaskAPI \  
-JavaScript \ 
-Html \
-Css \
+FlaskAPI\
+JavaScript\
+Html\
+Css\
